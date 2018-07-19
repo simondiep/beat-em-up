@@ -4,6 +4,7 @@
     y: 500,
     height: 100,
     width: 50,
+    depth: 20,
     vx: 0,
     vy: 0,
     speed: 2,
@@ -21,11 +22,13 @@
     y: 500,
     height: 100,
     width: 50,
+    depth: 10,
   }, {
     x: 300,
     y: 100,
-    height: 300,
+    height: 200,
     width: 500,
+    depth: 50,
   }];
   window.onload = () => {
     window.addEventListener('keydown', onKeyDown);
@@ -72,39 +75,46 @@
     let collidedWithEnemy = false;
     for (const enemy of enemies) {
       // overlap top right with enemy
-      if ((player.x + player.width) >= enemy.x && (player.x + player.width) <= (enemy.x + enemy.width) &&
-        player.y >= enemy.y && player.y <= (enemy.y + enemy.height)) {
+      if ((player.x + player.width) >= (enemy.x - enemy.depth) && (player.x + player.width) <= (enemy.x + enemy.width) &&
+        (player.y - player.depth) >= (enemy.y - enemy.depth) && (player.y - player.depth) <= (enemy.y + enemy.height)) {
         collidedWithEnemy = true;
       }
       // overlap bottom right with enemy
-      else if ((player.x + player.width) >= enemy.x && (player.x + player.width) <= (enemy.x + enemy.width) &&
-        (player.y + player.height) >= enemy.y && (player.y + player.height) <= (enemy.y + enemy.height)) {
+      else if ((player.x + player.width) >= (enemy.x - enemy.depth) && (player.x + player.width) <= (enemy.x + enemy.width) &&
+        (player.y + player.height) >= (enemy.y - enemy.depth) && (player.y + player.height) <= (enemy.y + enemy.height)) {
         collidedWithEnemy = true;
       }
       // overlap top left
-      else if (player.x >= enemy.x && player.x <= (enemy.x + enemy.width) &&
-        player.y >= enemy.y && player.y <= (enemy.y + enemy.height)) {
+      else if ((player.x - player.depth) >= (enemy.x - enemy.depth) && (player.x - player.depth) <= (enemy.x + enemy.width) &&
+        (player.y - player.depth) >= (enemy.y - enemy.depth) && (player.y - player.depth) <= (enemy.y + enemy.height)) {
         collidedWithEnemy = true;
       }
       // overlap bottom left
-      else if (player.x >= enemy.x && player.x <= (enemy.x + enemy.width) &&
-        (player.y + player.height) >= enemy.y && (player.y + player.height) <= (enemy.y + enemy.height)) {
+      else if (player.x >= (enemy.x - enemy.depth) && player.x <= (enemy.x + enemy.width) &&
+        (player.y + player.height) >= (enemy.y - enemy.depth) && (player.y + player.height) <= (enemy.y + enemy.height)) {
         collidedWithEnemy = true;
       }
+    }
+
+    // Draw enemies
+    for (const enemy of enemies) {
+      context.fillStyle = "darkred";
+      context.fillRect(enemy.x - enemy.depth, enemy.y - enemy.depth, enemy.width, enemy.height);
+      context.fillStyle = "red";
+      context.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
     }
 
     // Draw player
     if (collidedWithEnemy) {
-      context.fillStyle = "blue"
+      context.fillStyle = "darkblue";
+      context.fillRect(player.x - player.depth, player.y - player.depth, player.width, player.height);
+      context.fillStyle = "blue";
+      context.fillRect(player.x, player.y, player.width, player.height);
     } else {
+      context.fillStyle = "darkgreen";
+      context.fillRect(player.x - player.depth, player.y - player.depth, player.width, player.height);
       context.fillStyle = "green";
-    }
-    context.fillRect(player.x, player.y, player.width, player.height);
-
-    // Draw enemy
-    context.fillStyle = "red";
-    for (const enemy of enemies) {
-      context.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+      context.fillRect(player.x, player.y, player.width, player.height);
     }
   }
 
