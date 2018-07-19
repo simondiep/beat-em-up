@@ -1,0 +1,155 @@
+<script>
+  const player = {
+    x: 100,
+    y: 500,
+    height: 100,
+    width: 50,
+    vx: 0,
+    vy: 0,
+    speed: 2,
+    topSpeed: 10,
+    directionsPressed: {
+      UP: false,
+      DOWN: false,
+      LEFT: false,
+      RIGHT: false,
+    }
+  };
+
+  const enemies = [{
+    x: 500,
+    y: 500,
+    height: 100,
+    width: 50,
+  }, {
+    x: 300,
+    y: 100,
+    height: 300,
+    width: 500,
+  }];
+  window.onload = () => {
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+
+    setInterval(update, 1000 / 60);
+  }
+
+  function update() {
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext("2d");
+    context.fillStyle = "black";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Player Movement
+    if (player.directionsPressed.UP && player.vy > -player.topSpeed) {
+      player.vy -= player.speed;
+    }
+    if (player.directionsPressed.DOWN && player.vy < player.topSpeed) {
+      player.vy += player.speed;
+    }
+    if (player.directionsPressed.LEFT && player.vx > -player.topSpeed) {
+      player.vx -= player.speed;
+    }
+    if (player.directionsPressed.RIGHT && player.vx < player.topSpeed) {
+      player.vx += player.speed;
+    }
+
+    if (!player.directionsPressed.UP && !player.directionsPressed.DOWN) {
+      player.vy = 0;
+    }
+    if (!player.directionsPressed.LEFT && !player.directionsPressed.RIGHT) {
+      player.vx = 0;
+    }
+
+    if (player.x + player.vx > 0 && player.x + player.vx < canvas.width) {
+      player.x += player.vx;
+    }
+    if (player.y + player.vy > 0 && player.y + player.vy < canvas.height) {
+      player.y += player.vy;
+    }
+
+    // check for collision between boxes
+    let collidedWithEnemy = false;
+    for (const enemy of enemies) {
+      // overlap top right with enemy
+      if ((player.x + player.width) >= enemy.x && (player.x + player.width) <= (enemy.x + enemy.width) &&
+        player.y >= enemy.y && player.y <= (enemy.y + enemy.height)) {
+        collidedWithEnemy = true;
+      }
+      // overlap bottom right with enemy
+      else if ((player.x + player.width) >= enemy.x && (player.x + player.width) <= (enemy.x + enemy.width) &&
+        (player.y + player.height) >= enemy.y && (player.y + player.height) <= (enemy.y + enemy.height)) {
+        collidedWithEnemy = true;
+      }
+      // overlap top left
+      else if (player.x >= enemy.x && player.x <= (enemy.x + enemy.width) &&
+        player.y >= enemy.y && player.y <= (enemy.y + enemy.height)) {
+        collidedWithEnemy = true;
+      }
+      // overlap bottom left
+      else if (player.x >= enemy.x && player.x <= (enemy.x + enemy.width) &&
+        (player.y + player.height) >= enemy.y && (player.y + player.height) <= (enemy.y + enemy.height)) {
+        collidedWithEnemy = true;
+      }
+    }
+
+    // Draw player
+    if (collidedWithEnemy) {
+      context.fillStyle = "blue"
+    } else {
+      context.fillStyle = "green";
+    }
+    context.fillRect(player.x, player.y, player.width, player.height);
+
+    // Draw enemy
+    context.fillStyle = "red";
+    for (const enemy of enemies) {
+      context.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+    }
+  }
+
+  function onKeyDown(event) {
+    switch (event.keyCode) {
+      case 38: // up arrow
+      case 87: // W
+        player.directionsPressed.UP = true;
+        break;
+      case 37: // left arrow
+      case 65: // A
+        player.directionsPressed.LEFT = true;
+        break;
+      case 40: // down arrow
+      case 83: // S
+        player.directionsPressed.DOWN = true;
+        break;
+      case 39: // right arrow
+      case 68: // D
+        player.directionsPressed.RIGHT = true;
+        break;
+    }
+  }
+
+  function onKeyUp(event) {
+    switch (event.keyCode) {
+      case 38: // up arrow
+      case 87: // W
+        player.directionsPressed.UP = false;
+        break;
+      case 37: // left arrow
+      case 65: // A
+        player.directionsPressed.LEFT = false;
+        break;
+      case 40: // down arrow
+      case 83: // S
+        player.directionsPressed.DOWN = false;
+        break;
+      case 39: // right arrow
+      case 68: // D
+        player.directionsPressed.RIGHT = false;
+        break;
+    }
+  }
+</script>
+
+<canvas id="canvas" width="1000" height="600"></canvas>
+<div>WASD to move</div>
