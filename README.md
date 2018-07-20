@@ -6,5 +6,5 @@ Still in-progress - currently a basic box collision detector
 
 ## TODO
 
-Collide only if on same y-plane
 Add images
+Add attack

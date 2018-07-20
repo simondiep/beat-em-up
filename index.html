@@ -4,11 +4,11 @@
     y: 500,
     height: 100,
     width: 50,
-    depth: 20,
+    depth: 5,
     vx: 0,
     vy: 0,
-    speed: 2,
-    topSpeed: 10,
+    speed: 1,
+    topSpeed: 5,
     directionsPressed: {
       UP: false,
       DOWN: false,
@@ -22,13 +22,13 @@
     y: 500,
     height: 100,
     width: 50,
-    depth: 10,
+    depth: 5,
   }, {
     x: 300,
     y: 100,
     height: 200,
     width: 500,
-    depth: 50,
+    depth: 10,
   }];
   window.onload = () => {
     window.addEventListener('keydown', onKeyDown);
@@ -41,7 +41,7 @@
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext("2d");
     context.fillStyle = "black";
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(streetBackground, 0, 0, canvas.width, canvas.height);
 
     // Player Movement
     if (player.directionsPressed.UP && player.vy > -player.topSpeed) {
@@ -71,27 +71,27 @@
       player.y += player.vy;
     }
 
-    // check for collision between boxes
+    // check for movement collision between boxes
     let collidedWithEnemy = false;
     for (const enemy of enemies) {
-      // overlap top right with enemy
-      if ((player.x + player.width) >= (enemy.x - enemy.depth) && (player.x + player.width) <= (enemy.x + enemy.width) &&
-        (player.y - player.depth) >= (enemy.y - enemy.depth) && (player.y - player.depth) <= (enemy.y + enemy.height)) {
+      // overlap bottom right background with enemy
+      if ((player.x + player.width - player.depth) >= (enemy.x - enemy.depth) && (player.x + player.width - player.depth) <= (enemy.x + enemy.width + enemy.depth) &&
+        (player.y + player.height - player.depth) >= (enemy.y - enemy.depth) && (player.y + player.height - player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
         collidedWithEnemy = true;
       }
-      // overlap bottom right with enemy
-      else if ((player.x + player.width) >= (enemy.x - enemy.depth) && (player.x + player.width) <= (enemy.x + enemy.width) &&
-        (player.y + player.height) >= (enemy.y - enemy.depth) && (player.y + player.height) <= (enemy.y + enemy.height)) {
+      // overlap bottom right foreground with enemy
+      else if ((player.x + player.width + player.depth) >= (enemy.x - enemy.depth) && (player.x + player.width + player.depth) <= (enemy.x + enemy.width + enemy.depth) &&
+        (player.y + player.height + player.depth) >= (enemy.y - enemy.depth) && (player.y + player.height + player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
         collidedWithEnemy = true;
       }
-      // overlap top left
-      else if ((player.x - player.depth) >= (enemy.x - enemy.depth) && (player.x - player.depth) <= (enemy.x + enemy.width) &&
-        (player.y - player.depth) >= (enemy.y - enemy.depth) && (player.y - player.depth) <= (enemy.y + enemy.height)) {
+      // overlap bottom left background with enemy
+      else if ((player.x - player.depth) >= (enemy.x - enemy.depth) && (player.x - player.depth) <= (enemy.x + enemy.width + enemy.depth) &&
+        (player.y + player.height - player.depth) >= (enemy.y - enemy.depth) && (player.y + player.height - player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
         collidedWithEnemy = true;
       }
-      // overlap bottom left
-      else if (player.x >= (enemy.x - enemy.depth) && player.x <= (enemy.x + enemy.width) &&
-        (player.y + player.height) >= (enemy.y - enemy.depth) && (player.y + player.height) <= (enemy.y + enemy.height)) {
+      // overlap bottom left foreground with enemy
+      else if ((player.x + player.depth) >= (enemy.x - enemy.depth) && (player.x + player.depth) <= (enemy.x + enemy.width + enemy.depth) &&
+        (player.y + player.height + player.depth) >= (enemy.y - enemy.depth) && (player.y + player.height + player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
         collidedWithEnemy = true;
       }
     }
@@ -102,20 +102,25 @@
       context.fillRect(enemy.x - enemy.depth, enemy.y - enemy.depth, enemy.width, enemy.height);
       context.fillStyle = "red";
       context.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+      context.fillStyle = "salmon";
+      context.fillRect(enemy.x + enemy.depth, enemy.y + enemy.depth, enemy.width, enemy.height);
     }
 
     // Draw player
+    let playerBgColor = "darkblue";
+    let playerColor = "blue";
+    let playerFgColor = "lightblue"
     if (collidedWithEnemy) {
-      context.fillStyle = "darkblue";
-      context.fillRect(player.x - player.depth, player.y - player.depth, player.width, player.height);
-      context.fillStyle = "blue";
-      context.fillRect(player.x, player.y, player.width, player.height);
-    } else {
-      context.fillStyle = "darkgreen";
-      context.fillRect(player.x - player.depth, player.y - player.depth, player.width, player.height);
-      context.fillStyle = "green";
-      context.fillRect(player.x, player.y, player.width, player.height);
+      playerBgColor = "darkgreen";
+      playerColor = "green";
+      playerFgColor = "lightgreen"
     }
+    context.fillStyle = playerBgColor;
+    context.fillRect(player.x - player.depth, player.y - player.depth, player.width, player.height);
+    context.fillStyle = playerColor;
+    context.fillRect(player.x, player.y, player.width, player.height);
+    context.fillStyle = playerFgColor;
+    context.fillRect(player.x + player.depth, player.y + player.depth, player.width, player.height);
   }
 
   function onKeyDown(event) {
@@ -163,3 +168,6 @@
 
 <canvas id="canvas" width="1000" height="600"></canvas>
 <div>WASD to move</div>
+<div id="assets" style="display:none;">
+  <img id="streetBackground" src="./street-bg.png"></img>
+</div>
