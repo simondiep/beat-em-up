@@ -6,5 +6,5 @@ Still in-progress - currently a basic box collision detector
 
 ## TODO
 
-Add images
+Add image with depth
 Add attack
