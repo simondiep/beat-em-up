@@ -27,7 +27,7 @@
     x: 300,
     y: 100,
     height: 200,
-    width: 500,
+    width: 200,
     depth: 10,
   }];
   window.onload = () => {
@@ -74,39 +74,35 @@
     // check for movement collision between boxes
     let collidedWithEnemy = false;
     for (const enemy of enemies) {
-      // overlap bottom right background with enemy
+      // overlap bottom right background with top left enemy
       if ((player.x + player.width - player.depth) >= (enemy.x - enemy.depth) && (player.x + player.width - player.depth) <= (enemy.x + enemy.width + enemy.depth) &&
-        (player.y + player.height - player.depth) >= (enemy.y - enemy.depth) && (player.y + player.height - player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
+        (player.y + player.height - player.depth) >= (enemy.y + enemy.height - enemy.depth) && (player.y + player.height - player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
         collidedWithEnemy = true;
       }
       // overlap bottom right foreground with enemy
       else if ((player.x + player.width + player.depth) >= (enemy.x - enemy.depth) && (player.x + player.width + player.depth) <= (enemy.x + enemy.width + enemy.depth) &&
-        (player.y + player.height + player.depth) >= (enemy.y - enemy.depth) && (player.y + player.height + player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
+        (player.y + player.height + player.depth) >= (enemy.y + enemy.height - enemy.depth) && (player.y + player.height + player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
         collidedWithEnemy = true;
       }
       // overlap bottom left background with enemy
       else if ((player.x - player.depth) >= (enemy.x - enemy.depth) && (player.x - player.depth) <= (enemy.x + enemy.width + enemy.depth) &&
-        (player.y + player.height - player.depth) >= (enemy.y - enemy.depth) && (player.y + player.height - player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
+        (player.y + player.height - player.depth) >= (enemy.y + enemy.height - enemy.depth) && (player.y + player.height - player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
         collidedWithEnemy = true;
       }
       // overlap bottom left foreground with enemy
       else if ((player.x + player.depth) >= (enemy.x - enemy.depth) && (player.x + player.depth) <= (enemy.x + enemy.width + enemy.depth) &&
-        (player.y + player.height + player.depth) >= (enemy.y - enemy.depth) && (player.y + player.height + player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
+        (player.y + player.height + player.depth) >= (enemy.y + enemy.height - enemy.depth) && (player.y + player.height + player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
         collidedWithEnemy = true;
       }
     }
 
-    // Draw enemies
-    for (const enemy of enemies) {
-      context.fillStyle = "darkred";
-      context.fillRect(enemy.x - enemy.depth, enemy.y - enemy.depth, enemy.width, enemy.height);
-      context.fillStyle = "red";
-      context.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-      context.fillStyle = "salmon";
-      context.fillRect(enemy.x + enemy.depth, enemy.y + enemy.depth, enemy.width, enemy.height);
-    }
+    // Draw the furthest in back first
+    const allEntities = enemies.slice(0);
+    allEntities.push(player);
+    allEntities.sort(function (a, b) {
+      return (a.y + a.height) - (b.y + b.height);
+    });
 
-    // Draw player
     let playerBgColor = "darkblue";
     let playerColor = "blue";
     let playerFgColor = "lightblue"
@@ -115,12 +111,14 @@
       playerColor = "green";
       playerFgColor = "lightgreen"
     }
-    context.fillStyle = playerBgColor;
-    context.fillRect(player.x - player.depth, player.y - player.depth, player.width, player.height);
-    context.fillStyle = playerColor;
-    context.fillRect(player.x, player.y, player.width, player.height);
-    context.fillStyle = playerFgColor;
-    context.fillRect(player.x + player.depth, player.y + player.depth, player.width, player.height);
+    for (const entity of allEntities) {
+      context.fillStyle = playerBgColor;
+      context.fillRect(entity.x - entity.depth, entity.y - entity.depth, entity.width, entity.height);
+      context.fillStyle = playerColor;
+      context.fillRect(entity.x, entity.y, entity.width, entity.height);
+      context.fillStyle = playerFgColor;
+      context.fillRect(entity.x + entity.depth, entity.y + entity.depth, entity.width, entity.height);
+    }
   }
 
   function onKeyDown(event) {
