@@ -15,6 +15,7 @@
       LEFT: false,
       RIGHT: false,
     },
+    attacks: [],
     collided: false,
   };
 
@@ -76,29 +77,15 @@
 
     // check for movement collision between boxes
     for (const enemy of enemies) {
-      // overlap bottom right background with top left enemy
-      if ((player.x + player.width - player.depth) >= (enemy.x - enemy.depth) && (player.x + player.width - player.depth) <= (enemy.x + enemy.width + enemy.depth) &&
-        (player.y + player.height - player.depth) >= (enemy.y + enemy.height - enemy.depth) && (player.y + player.height - player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
+      if (hasRunIntoEachOther(player, enemy)) {
         player.collided = true;
         enemy.collided = true;
       }
-      // overlap bottom right foreground with enemy
-      else if ((player.x + player.width + player.depth) >= (enemy.x - enemy.depth) && (player.x + player.width + player.depth) <= (enemy.x + enemy.width + enemy.depth) &&
-        (player.y + player.height + player.depth) >= (enemy.y + enemy.height - enemy.depth) && (player.y + player.height + player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
-        player.collided = true;
-        enemy.collided = true;
-      }
-      // overlap bottom left background with enemy
-      else if ((player.x - player.depth) >= (enemy.x - enemy.depth) && (player.x - player.depth) <= (enemy.x + enemy.width + enemy.depth) &&
-        (player.y + player.height - player.depth) >= (enemy.y + enemy.height - enemy.depth) && (player.y + player.height - player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
-        player.collided = true;
-        enemy.collided = true;
-      }
-      // overlap bottom left foreground with enemy
-      else if ((player.x + player.depth) >= (enemy.x - enemy.depth) && (player.x + player.depth) <= (enemy.x + enemy.width + enemy.depth) &&
-        (player.y + player.height + player.depth) >= (enemy.y + enemy.height - enemy.depth) && (player.y + player.height + player.depth) <= (enemy.y + enemy.height + enemy.depth)) {
-        player.collided = true;
-        enemy.collided = true;
+      for (const attack of player.attacks) {
+        if (hasRunIntoEachOther(attack, enemy)) {
+          attack.collided = true;
+          enemy.collided = true;
+        }
       }
     }
 
@@ -120,8 +107,54 @@
       context.fillRect(entity.x + entity.depth, entity.y + entity.depth, entity.width, entity.height);
       context.drawImage(fighterImage, entity.x, entity.y, entity.width, entity.height);
       entity.collided = false;
+      if (entity.attacks) {
+        for (let i = entity.attacks.length - 1; i >= 0; i--) {
+          const attack = entity.attacks[i];
+          if (attack.collided) {
+            context.fillStyle = "#db2d20";
+          } else {
+            context.fillStyle = "#ffeecc";
+          }
+          context.fillRect(attack.x, attack.y, attack.width, attack.height);
+          attack.currentFrame++;
+          if (attack.currentFrame > attack.duration) {
+            entity.attacks.splice(i, 1);
+          }
+        }
+      }
     }
   }
+
+  // Detects if two entity's feet are aligned
+  function hasRunIntoEachOther(entityOne, entityTwo) {
+    // overlap bottom right background with top left entityTwo
+    if ((entityOne.x + entityOne.width - entityOne.depth) >= (entityTwo.x - entityTwo.depth) && (entityOne.x + entityOne.width - entityOne.depth) <= (entityTwo.x + entityTwo.width + entityTwo.depth) &&
+      (entityOne.y + entityOne.height - entityOne.depth) >= (entityTwo.y + entityTwo.height - entityTwo.depth) && (entityOne.y + entityOne.height - entityOne.depth) <= (entityTwo.y + entityTwo.height + entityTwo.depth)) {
+      return true;
+    }
+    // overlap bottom right foreground with entityTwo
+    if ((entityOne.x + entityOne.width + entityOne.depth) >= (entityTwo.x - entityTwo.depth) && (entityOne.x + entityOne.width + entityOne.depth) <= (entityTwo.x + entityTwo.width + entityTwo.depth) &&
+      (entityOne.y + entityOne.height + entityOne.depth) >= (entityTwo.y + entityTwo.height - entityTwo.depth) && (entityOne.y + entityOne.height + entityOne.depth) <= (entityTwo.y + entityTwo.height + entityTwo.depth)) {
+      return true;
+    }
+    // overlap bottom left background with entityTwo
+    if ((entityOne.x - entityOne.depth) >= (entityTwo.x - entityTwo.depth) && (entityOne.x - entityOne.depth) <= (entityTwo.x + entityTwo.width + entityTwo.depth) &&
+      (entityOne.y + entityOne.height - entityOne.depth) >= (entityTwo.y + entityTwo.height - entityTwo.depth) && (entityOne.y + entityOne.height - entityOne.depth) <= (entityTwo.y + entityTwo.height + entityTwo.depth)) {
+      return true;
+    }
+    // overlap bottom left foreground with entityTwo
+    if ((entityOne.x + entityOne.depth) >= (entityTwo.x - entityTwo.depth) && (entityOne.x + entityOne.depth) <= (entityTwo.x + entityTwo.width + entityTwo.depth) &&
+      (entityOne.y + entityOne.height + entityOne.depth) >= (entityTwo.y + entityTwo.height - entityTwo.depth) && (entityOne.y + entityOne.height + entityOne.depth) <= (entityTwo.y + entityTwo.height + entityTwo.depth)) {
+      return true;
+    }
+    return false;
+  }
+
+  // function isOverlapping(entityOne, entityTwo) {
+  //   return (entityOne.x <= (entityTwo.x + entityTwo.width) && (entityOne.x + entityOne.width) >= entityTwo.x) &&
+  //     (entityOne.y <= (entityTwo.y + entityTwo.height) && (entityOne.y + entityOne.height) >= entityTwo.y) &&
+  //     (-entityOne.depth <= entityTwo.depth && entityOne.depth >= -entityTwo.depth);
+  // }
 
   function onKeyDown(event) {
     switch (event.keyCode) {
@@ -140,6 +173,17 @@
       case 39: // right arrow
       case 68: // D
         player.directionsPressed.RIGHT = true;
+        break;
+      case 32: // Space
+        player.attacks.push({
+          x: player.x + player.width,
+          y: player.y,
+          height: player.height,
+          width: player.width,
+          depth: player.depth,
+          currentFrame: 0,
+          duration: 10,
+        })
         break;
     }
   }
@@ -167,7 +211,7 @@
 </script>
 
 <canvas id="canvas" width="1000" height="600"></canvas>
-<div>WASD to move</div>
+<div>WASD to move, Space to attack</div>
 <div id="assets" style="display:none;">
   <img id="fighterImage" src="./fighter.png"></img>
   <img id="streetBackground" src="./street-bg.png"></img>
