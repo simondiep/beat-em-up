@@ -47,32 +47,34 @@
     context.fillStyle = "black";
     context.drawImage(streetBackground, 0, 0, canvas.width, canvas.height);
 
-    // Player Movement
-    if (player.directionsPressed.UP && player.vy > -player.topSpeed) {
-      player.vy -= player.speed;
-    }
-    if (player.directionsPressed.DOWN && player.vy < player.topSpeed) {
-      player.vy += player.speed;
-    }
-    if (player.directionsPressed.LEFT && player.vx > -player.topSpeed) {
-      player.vx -= player.speed;
-    }
-    if (player.directionsPressed.RIGHT && player.vx < player.topSpeed) {
-      player.vx += player.speed;
-    }
+    // Player Movement only if not attacking
+    if (player.attacks.length === 0) {
+      if (player.directionsPressed.UP && player.vy > -player.topSpeed) {
+        player.vy -= player.speed;
+      }
+      if (player.directionsPressed.DOWN && player.vy < player.topSpeed) {
+        player.vy += player.speed;
+      }
+      if (player.directionsPressed.LEFT && player.vx > -player.topSpeed) {
+        player.vx -= player.speed;
+      }
+      if (player.directionsPressed.RIGHT && player.vx < player.topSpeed) {
+        player.vx += player.speed;
+      }
 
-    if (!player.directionsPressed.UP && !player.directionsPressed.DOWN) {
-      player.vy = 0;
-    }
-    if (!player.directionsPressed.LEFT && !player.directionsPressed.RIGHT) {
-      player.vx = 0;
-    }
+      if (!player.directionsPressed.UP && !player.directionsPressed.DOWN) {
+        player.vy = 0;
+      }
+      if (!player.directionsPressed.LEFT && !player.directionsPressed.RIGHT) {
+        player.vx = 0;
+      }
 
-    if (player.x + player.vx > 0 && player.x + player.vx < canvas.width) {
-      player.x += player.vx;
-    }
-    if (player.y + player.vy > 0 && player.y + player.vy < canvas.height) {
-      player.y += player.vy;
+      if (player.x + player.vx > 0 && player.x + player.vx < canvas.width) {
+        player.x += player.vx;
+      }
+      if (player.y + player.vy > 0 && player.y + player.vy < canvas.height) {
+        player.y += player.vy;
+      }
     }
 
     // check for movement collision between boxes
@@ -101,13 +103,8 @@
         context.fillStyle = "rgba(255,0,0,0.2)";
         context.fillRect(entity.x, entity.y, entity.width, entity.height);
       }
-      context.fillStyle = "rgba(0,0,0,0.2)";
-      context.fillRect(entity.x - entity.depth, entity.y - entity.depth, entity.width, entity.height);
-      context.fillStyle = "rgba(50,50,50,0.2)";
-      context.fillRect(entity.x + entity.depth, entity.y + entity.depth, entity.width, entity.height);
-      context.drawImage(fighterImage, entity.x, entity.y, entity.width, entity.height);
       entity.collided = false;
-      if (entity.attacks) {
+      if (entity.attacks && entity.attacks.length > 0) {
         for (let i = entity.attacks.length - 1; i >= 0; i--) {
           const attack = entity.attacks[i];
           if (attack.collided) {
@@ -115,14 +112,27 @@
           } else {
             context.fillStyle = "#ffeecc";
           }
-          context.fillRect(attack.x, attack.y, attack.width, attack.height);
+          drawDepthOutline(attack);
+          context.drawImage(fighterKickingImage, attack.x, attack.y, attack.width, attack.height);
           attack.currentFrame++;
           if (attack.currentFrame > attack.duration) {
             entity.attacks.splice(i, 1);
           }
         }
+      } else {
+        drawDepthOutline(entity);
+        context.drawImage(fighterImage, entity.x, entity.y, entity.width, entity.height);
       }
     }
+  }
+
+  function drawDepthOutline(entity) {
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext("2d");
+    context.fillStyle = "rgba(0,0,0,0.2)";
+    context.fillRect(entity.x - entity.depth, entity.y - entity.depth, entity.width, entity.height);
+    context.fillStyle = "rgba(50,50,50,0.2)";
+    context.fillRect(entity.x + entity.depth, entity.y + entity.depth, entity.width, entity.height);
   }
 
   // Detects if two entity's feet are aligned
@@ -176,10 +186,10 @@
         break;
       case 32: // Space
         player.attacks.push({
-          x: player.x + player.width,
+          x: player.x,
           y: player.y,
           height: player.height,
-          width: player.width,
+          width: player.width * 2,
           depth: player.depth,
           currentFrame: 0,
           duration: 10,
@@ -214,5 +224,6 @@
 <div>WASD to move, Space to attack</div>
 <div id="assets" style="display:none;">
   <img id="fighterImage" src="./fighter.png"></img>
+  <img id="fighterKickingImage" src="./fighter-kicking.png"></img>
   <img id="streetBackground" src="./street-bg.png"></img>
 </div>
