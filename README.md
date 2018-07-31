@@ -6,8 +6,7 @@ Still in-progress - currently a basic box collision detector
 
 ## TODO
 
-Add image with depth
-Tune attack hit box to respect z-axis
-Punch/Kick image
-On hit image
-Flip image based on facing direction
+- Add image with depth
+- Tune attack hit box to respect z-axis
+- Punch image
+- On hit image

@@ -1,4 +1,6 @@
 <script>
+  let canvas;
+  let context;
   const player = {
     x: 100,
     y: 500,
@@ -15,6 +17,7 @@
       LEFT: false,
       RIGHT: false,
     },
+    facingDirection: 'RIGHT',
     attacks: [],
     collided: false,
   };
@@ -26,6 +29,7 @@
     width: 50,
     depth: 5,
     collided: false,
+    facingDirection: 'LEFT',
   }, {
     x: 300,
     y: 100,
@@ -33,8 +37,19 @@
     width: 200,
     depth: 10,
     collided: false,
+    facingDirection: 'LEFT',
+  }, {
+    x: 600,
+    y: 300,
+    height: 100,
+    width: 100,
+    depth: 5,
+    collided: false,
+    facingDirection: 'RIGHT',
   }];
   window.onload = () => {
+    canvas = document.getElementById('canvas');
+    context = canvas.getContext("2d");
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
 
@@ -42,8 +57,6 @@
   }
 
   function update() {
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext("2d");
     context.fillStyle = "black";
     context.drawImage(streetBackground, 0, 0, canvas.width, canvas.height);
 
@@ -57,9 +70,11 @@
       }
       if (player.directionsPressed.LEFT && player.vx > -player.topSpeed) {
         player.vx -= player.speed;
+        player.facingDirection = 'LEFT';
       }
       if (player.directionsPressed.RIGHT && player.vx < player.topSpeed) {
         player.vx += player.speed;
+        player.facingDirection = 'RIGHT';
       }
 
       if (!player.directionsPressed.UP && !player.directionsPressed.DOWN) {
@@ -107,13 +122,12 @@
       if (entity.attacks && entity.attacks.length > 0) {
         for (let i = entity.attacks.length - 1; i >= 0; i--) {
           const attack = entity.attacks[i];
-          if (attack.collided) {
-            context.fillStyle = "#db2d20";
-          } else {
-            context.fillStyle = "#ffeecc";
-          }
           drawDepthOutline(attack);
-          context.drawImage(fighterKickingImage, attack.x, attack.y, attack.width, attack.height);
+          if (entity.facingDirection === 'RIGHT') {
+            context.drawImage(fighterKickingImage, attack.x, attack.y, attack.width, attack.height);
+          } else {
+            drawHorizontallyFlippedImage(fighterKickingImage, attack.x, attack.y, attack.width, attack.height);
+          }
           attack.currentFrame++;
           if (attack.currentFrame > attack.duration) {
             entity.attacks.splice(i, 1);
@@ -121,18 +135,28 @@
         }
       } else {
         drawDepthOutline(entity);
-        context.drawImage(fighterImage, entity.x, entity.y, entity.width, entity.height);
+        if (entity.facingDirection === 'RIGHT') {
+          context.drawImage(fighterImage, entity.x, entity.y, entity.width, entity.height);
+        } else {
+          drawHorizontallyFlippedImage(fighterImage, entity.x, entity.y, entity.width, entity.height);
+        }
+
       }
     }
   }
 
   function drawDepthOutline(entity) {
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext("2d");
     context.fillStyle = "rgba(0,0,0,0.2)";
     context.fillRect(entity.x - entity.depth, entity.y - entity.depth, entity.width, entity.height);
     context.fillStyle = "rgba(50,50,50,0.2)";
     context.fillRect(entity.x + entity.depth, entity.y + entity.depth, entity.width, entity.height);
+  }
+
+  function drawHorizontallyFlippedImage(image, x, y, width, height) {
+    context.translate(x + width, y);
+    context.scale(-1, 1);
+    context.drawImage(image, 0, 0, width, height);
+    context.setTransform(1, 0, 0, 1, 0, 0);
   }
 
   // Detects if two entity's feet are aligned
@@ -185,8 +209,9 @@
         player.directionsPressed.RIGHT = true;
         break;
       case 32: // Space
+        const originX = player.facingDirection === 'RIGHT' ? player.x : player.x - player.width;
         player.attacks.push({
-          x: player.x,
+          x: originX,
           y: player.y,
           height: player.height,
           width: player.width * 2,
