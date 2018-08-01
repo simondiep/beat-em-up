@@ -1,56 +1,80 @@
 <script>
   let canvas;
   let context;
-  const player = {
-    x: 100,
-    y: 500,
-    height: 100,
-    width: 50,
-    depth: 5,
-    vx: 0,
-    vy: 0,
-    speed: 1,
-    topSpeed: 5,
-    directionsPressed: {
-      UP: false,
-      DOWN: false,
-      LEFT: false,
-      RIGHT: false,
-    },
-    facingDirection: 'RIGHT',
-    attacks: [],
-    collided: false,
-  };
+  let player;
+  let enemies;
 
-  const enemies = [{
-    x: 500,
-    y: 500,
-    height: 100,
-    width: 50,
-    depth: 5,
-    collided: false,
-    facingDirection: 'LEFT',
-    attacks: [],
-  }, {
-    x: 300,
-    y: 200,
-    height: 100,
-    width: 50,
-    depth: 5,
-    collided: false,
-    facingDirection: 'LEFT',
-    attacks: [],
-  }, {
-    x: 600,
-    y: 300,
-    height: 100,
-    width: 50,
-    depth: 5,
-    collided: false,
-    facingDirection: 'RIGHT',
-    attacks: [],
-  }];
   window.onload = () => {
+    player = {
+      x: 100,
+      y: 500,
+      height: 100,
+      width: 50,
+      depth: 10,
+      vx: 0,
+      vy: 0,
+      speed: 1,
+      topSpeed: 5,
+      directionsPressed: {
+        UP: false,
+        DOWN: false,
+        LEFT: false,
+        RIGHT: false,
+      },
+      facingDirection: 'RIGHT',
+      attacks: [],
+      collided: false,
+      images: {
+        base: fighterImage,
+        onHit: fighterOnHitImage,
+        attack: fighterKickingImage,
+      }
+    };
+    enemies = [
+      {
+        x: 500,
+        y: 500,
+        height: 100,
+        width: 50,
+        depth: 10,
+        collided: false,
+        facingDirection: 'LEFT',
+        attacks: [],
+        images: {
+          base: fighterImage,
+          onHit: fighterOnHitImage,
+          attack: fighterKickingImage,
+        },
+      }, {
+        x: 300,
+        y: 200,
+        height: 100,
+        width: 50,
+        depth: 10,
+        collided: false,
+        facingDirection: 'LEFT',
+        attacks: [],
+        images: {
+          base: fighterImage,
+          onHit: fighterOnHitImage,
+          attack: fighterKickingImage,
+        },
+      }, {
+        x: 600,
+        y: 300,
+        height: 100,
+        width: 50,
+        depth: 10,
+        collided: false,
+        facingDirection: 'RIGHT',
+        attacks: [],
+        images: {
+          base: fighterImage,
+          onHit: fighterOnHitImage,
+          attack: fighterKickingImage,
+        },
+      }
+    ];
     canvas = document.getElementById('canvas');
     context = canvas.getContext("2d");
     window.addEventListener('keydown', onKeyDown);
@@ -124,19 +148,14 @@
     });
 
     for (const entity of allEntities) {
-      if (entity.collided) {
-        context.fillStyle = "rgba(255,0,0,0.2)";
-        context.fillRect(entity.x, entity.y, entity.width, entity.height);
-      }
-      entity.collided = false;
       if (entity.attacks && entity.attacks.length > 0) {
         for (let i = entity.attacks.length - 1; i >= 0; i--) {
           const attack = entity.attacks[i];
-          drawDepthOutline(attack);
+          // drawDepthOutline(attack);
           if (entity.facingDirection === 'RIGHT') {
-            context.drawImage(fighterKickingImage, attack.x, attack.y, attack.width, attack.height);
+            context.drawImage(entity.images.attack, attack.x, attack.y, attack.width, attack.height);
           } else {
-            drawHorizontallyFlippedImage(fighterKickingImage, attack.x, attack.y, attack.width, attack.height);
+            drawHorizontallyFlippedImage(entity.images.attack, attack.x, attack.y, attack.width, attack.height);
           }
           attack.currentFrame++;
           if (attack.currentFrame > attack.duration) {
@@ -144,14 +163,16 @@
           }
         }
       } else {
-        drawDepthOutline(entity);
+        // drawDepthOutline(entity);
+        const entityImage = entity.collided ? entity.images.onHit : entity.images.base;
         if (entity.facingDirection === 'RIGHT') {
-          context.drawImage(fighterImage, entity.x, entity.y, entity.width, entity.height);
+          context.drawImage(entityImage, entity.x, entity.y, entity.width, entity.height);
         } else {
-          drawHorizontallyFlippedImage(fighterImage, entity.x, entity.y, entity.width, entity.height);
+          drawHorizontallyFlippedImage(entityImage, entity.x, entity.y, entity.width, entity.height);
         }
 
       }
+      entity.collided = false;
     }
   }
 
@@ -195,9 +216,9 @@
 
   function drawDepthOutline(entity) {
     context.fillStyle = "rgba(0,0,0,0.2)";
-    context.fillRect(entity.x - entity.depth, entity.y - entity.depth, entity.width, entity.height);
+    context.fillRect(entity.x, entity.y - entity.depth, entity.width, entity.height);
     context.fillStyle = "rgba(50,50,50,0.2)";
-    context.fillRect(entity.x + entity.depth, entity.y + entity.depth, entity.width, entity.height);
+    context.fillRect(entity.x, entity.y + entity.depth, entity.width, entity.height);
   }
 
   function drawHorizontallyFlippedImage(image, x, y, width, height) {
@@ -210,22 +231,22 @@
   // Detects if two entity's feet are aligned
   function hasRunIntoEachOther(entityOne, entityTwo) {
     // overlap bottom right background with top left entityTwo
-    if ((entityOne.x + entityOne.width - entityOne.depth) >= (entityTwo.x - entityTwo.depth) && (entityOne.x + entityOne.width - entityOne.depth) <= (entityTwo.x + entityTwo.width + entityTwo.depth) &&
+    if ((entityOne.x + entityOne.width) >= (entityTwo.x) && (entityOne.x + entityOne.width) <= (entityTwo.x + entityTwo.width) &&
       (entityOne.y + entityOne.height - entityOne.depth) >= (entityTwo.y + entityTwo.height - entityTwo.depth) && (entityOne.y + entityOne.height - entityOne.depth) <= (entityTwo.y + entityTwo.height + entityTwo.depth)) {
       return true;
     }
     // overlap bottom right foreground with entityTwo
-    if ((entityOne.x + entityOne.width + entityOne.depth) >= (entityTwo.x - entityTwo.depth) && (entityOne.x + entityOne.width + entityOne.depth) <= (entityTwo.x + entityTwo.width + entityTwo.depth) &&
+    if ((entityOne.x + entityOne.width) >= (entityTwo.x) && (entityOne.x + entityOne.width) <= (entityTwo.x + entityTwo.width) &&
       (entityOne.y + entityOne.height + entityOne.depth) >= (entityTwo.y + entityTwo.height - entityTwo.depth) && (entityOne.y + entityOne.height + entityOne.depth) <= (entityTwo.y + entityTwo.height + entityTwo.depth)) {
       return true;
     }
     // overlap bottom left background with entityTwo
-    if ((entityOne.x - entityOne.depth) >= (entityTwo.x - entityTwo.depth) && (entityOne.x - entityOne.depth) <= (entityTwo.x + entityTwo.width + entityTwo.depth) &&
+    if ((entityOne.x) >= (entityTwo.x) && (entityOne.x) <= (entityTwo.x + entityTwo.width) &&
       (entityOne.y + entityOne.height - entityOne.depth) >= (entityTwo.y + entityTwo.height - entityTwo.depth) && (entityOne.y + entityOne.height - entityOne.depth) <= (entityTwo.y + entityTwo.height + entityTwo.depth)) {
       return true;
     }
     // overlap bottom left foreground with entityTwo
-    if ((entityOne.x + entityOne.depth) >= (entityTwo.x - entityTwo.depth) && (entityOne.x + entityOne.depth) <= (entityTwo.x + entityTwo.width + entityTwo.depth) &&
+    if ((entityOne.x) >= (entityTwo.x) && (entityOne.x) <= (entityTwo.x + entityTwo.widthh) &&
       (entityOne.y + entityOne.height + entityOne.depth) >= (entityTwo.y + entityTwo.height - entityTwo.depth) && (entityOne.y + entityOne.height + entityOne.depth) <= (entityTwo.y + entityTwo.height + entityTwo.depth)) {
       return true;
     }
@@ -297,6 +318,7 @@
 <div>WASD to move, Space to attack</div>
 <div id="assets" style="display:none;">
   <img id="fighterImage" src="./fighter.png"></img>
+  <img id="fighterOnHitImage" src="./fighter-onhit.png"></img>
   <img id="fighterKickingImage" src="./fighter-kicking.png"></img>
   <img id="streetBackground" src="./street-bg.png"></img>
 </div>

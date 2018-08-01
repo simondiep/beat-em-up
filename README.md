@@ -9,5 +9,4 @@ Still in-progress - currently a basic box collision detector
 - Add image with depth
 - Tune attack hit box to respect z-axis
 - Punch image
-- On hit image
 - Figure out why non-standard sized enemies don't detect attack collision
