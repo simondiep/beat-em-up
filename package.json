@@ -1,0 +1,22 @@
+{
+  "name": "beat-em-up",
+  "version": "1.0.0",
+  "description": "Simple Beat-em-up game using HTML5 Canvas",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "live-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simondiep/beat-em-up.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/simondiep/beat-em-up/issues"
+  },
+  "homepage": "https://github.com/simondiep/beat-em-up#readme",
+  "devDependencies": {
+    "live-server": "^1.2.0"
+  }
+}
