@@ -4,6 +4,8 @@ Simple Beat-em-up game using HTML5 Canvas
 
 Still in-progress - currently a basic box collision detector
 
+![demo preview](./preview.gif?raw=true)
+
 # How to start
 
 npm i && npm start
